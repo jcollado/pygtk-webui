@@ -20,19 +20,15 @@ def asynchronous_gtk_message(fun):
 
 def synchronous_gtk_message(fun):
 
-    class NoResult:
-        pass
-
-    def worker((R, function, args, kwargs)):
-        R.result = function(*args, **kwargs)
+    def worker((result, function, args, kwargs)):
+        result['result'] = function(*args, **kwargs)
 
     def fun2(*args, **kwargs):
-        class R:
-            result = NoResult
-        gobject.idle_add(worker, (R, fun, args, kwargs))
-        while R.result is NoResult:
+        result = {'result': None}
+        gobject.idle_add(worker, (result, fun, args, kwargs))
+        while result['result'] is None:
             time.sleep(0.01)
-        return R.result
+        return result['result']
 
     return fun2
 
