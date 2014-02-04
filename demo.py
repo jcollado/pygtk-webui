@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import json
 import os
 import signal
 import time
@@ -42,7 +41,6 @@ def main():
         again = False
         msg = web_recv()
         if msg:
-            msg = json.loads(msg)
             again = True
 
         if msg == "got-a-click":
