@@ -1,15 +1,16 @@
-import signal
+#!/usr/bin/python
+import json
 import os
+import signal
 import time
 import urllib
 
-from simplejson import dumps as to_json
-from simplejson import loads as from_json
-
-from webgui import start_gtk_thread
-from webgui import launch_browser
-from webgui import synchronous_gtk_message
-from webgui import kill_gtk_thread
+from webgui import (
+    start_gtk_thread,
+    launch_browser,
+    synchronous_gtk_message,
+    kill_gtk_thread,
+    )
 
 
 class Global(object):
@@ -23,9 +24,9 @@ class Global(object):
 def main():
     start_gtk_thread()
 
-    # Create a proper file:// URL pointing to demo.xhtml:
-    file = os.path.abspath('demo.xhtml')
-    uri = 'file://' + urllib.pathname2url(file)
+    # Create a proper file:// URL pointing to demo.html:
+    fname = os.path.abspath('demo.html')
+    uri = 'file://' + urllib.pathname2url(fname)
     browser, web_recv, web_send = \
         synchronous_gtk_message(launch_browser)(uri,
                                                 quit_function=Global.set_quit)
@@ -41,23 +42,15 @@ def main():
         again = False
         msg = web_recv()
         if msg:
-            msg = from_json(msg)
+            msg = json.loads(msg)
             again = True
 
         if msg == "got-a-click":
             clicks += 1
-            web_send('document.getElementById("messages").innerHTML = %s' %
-                     to_json('%d clicks so far' % clicks))
-            # If you are using jQuery, you can do this instead:
-            # web_send('$("#messages").text(%s)' %
-            #          to_json('%d clicks so far' % clicks))
+            web_send('$("#messages").text("{} clicks so far")'.format(clicks))
 
         if current_time - last_second >= 1.0:
-            web_send('document.getElementById("uptime-value").innerHTML = %s' %
-                     to_json('%d' % uptime_seconds))
-            # If you are using jQuery, you can do this instead:
-            # web_send('$("#uptime-value").text(%s)'
-            #        % to_json('%d' % uptime_seconds))
+            web_send('$("#uptime-value").text("{}")'.format(uptime_seconds))
             uptime_seconds += 1
             last_second += 1.0
 
