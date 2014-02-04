@@ -47,10 +47,10 @@ def main():
 
         if msg == "got-a-click":
             clicks += 1
-            web_send('$("#messages").text("{} clicks so far")'.format(clicks))
+            web_send('$messages.text("{} clicks so far")'.format(clicks))
 
         if current_time - last_second >= 1.0:
-            web_send('$("#uptime-value").text("{}")'.format(uptime_seconds))
+            web_send('$uptime_value.text("{}")'.format(uptime_seconds))
             uptime_seconds += 1
             last_second += 1.0
 
