@@ -7,29 +7,6 @@ import gobject
 import webkit
 
 
-class WebKitMethods(object):
-
-    @staticmethod
-    def create_browser():
-        return webkit.WebView()
-
-    @staticmethod
-    def inject_javascript(browser, script):
-        browser.execute_script(script)
-
-    @staticmethod
-    def connect_title_changed(browser, callback):
-        def callback_wrapper(widget, frame, title):
-            callback(title)
-        browser.connect('title-changed', callback_wrapper)
-
-    @staticmethod
-    def open_uri(browser, uri):
-        browser.open(uri)
-
-implementation = WebKitMethods
-
-
 def asynchronous_gtk_message(fun):
 
     def worker((function, args, kwargs)):
@@ -63,7 +40,7 @@ def synchronous_gtk_message(fun):
 def launch_browser(uri, quit_function=None, echo=True):
 
     window = gtk.Window()
-    browser = implementation.create_browser()
+    browser = webkit.WebView()
 
     box = gtk.VBox(homogeneous=False, spacing=0)
     window.add(box)
@@ -103,13 +80,12 @@ def launch_browser(uri, quit_function=None, echo=True):
 
     message_queue = Queue.Queue()
 
-    def title_changed(title):
+    def title_changed(_widget, _frame, title):
         if title != 'null':
             message_queue.put(title)
 
-    implementation.connect_title_changed(browser, title_changed)
-
-    implementation.open_uri(browser, uri)
+    browser.connect('title-changed', title_changed)
+    browser.open(uri)
 
     def web_recv():
         if message_queue.empty():
@@ -124,7 +100,7 @@ def launch_browser(uri, quit_function=None, echo=True):
         if echo:
             print '<<<', msg
         asynchronous_gtk_message(
-            implementation.inject_javascript)(browser, msg)
+            browser.execute_script)(msg)
 
     return browser, web_recv, web_send
 
