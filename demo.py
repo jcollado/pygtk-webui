@@ -26,9 +26,12 @@ def main():
     # Create a proper file:// URL pointing to demo.html:
     fname = os.path.abspath('demo.html')
     uri = 'file://' + urllib.pathname2url(fname)
-    browser, web_recv, web_send = \
-        synchronous_gtk_message(launch_browser)(uri,
-                                                quit_function=Global.set_quit)
+    browser, web_recv, web_send = (
+        synchronous_gtk_message(launch_browser)(
+            uri,
+            quit_function=Global.set_quit
+        )
+    )
 
     # Finally, here is our personalized main loop, 100% friendly
     # with "select" (although I am not using select here)!:
