@@ -94,7 +94,7 @@ if use is UseGtkMozEmbed:
 def asynchronous_gtk_message(fun):
 
     def worker((function, args, kwargs)):
-        apply(function, args, kwargs)
+        function(*args, **kwargs)
 
     def fun2(*args, **kwargs):
         gobject.idle_add(worker, (fun, args, kwargs))
@@ -108,7 +108,7 @@ def synchronous_gtk_message(fun):
         pass
 
     def worker((R, function, args, kwargs)):
-        R.result = apply(function, args, kwargs)
+        R.result = function(*args, **kwargs)
 
     def fun2(*args, **kwargs):
         class R:
