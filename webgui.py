@@ -1,6 +1,7 @@
-import time
 import Queue
 import thread
+import time
+
 import gtk
 import gobject
 
@@ -9,23 +10,23 @@ import webkit
 
 def asynchronous_gtk_message(fun):
 
-    def worker((function, args, kwargs)):
-        function(*args, **kwargs)
+    def worker((args, kwargs)):
+        fun(*args, **kwargs)
 
     def fun2(*args, **kwargs):
-        gobject.idle_add(worker, (fun, args, kwargs))
+        gobject.idle_add(worker, (args, kwargs))
 
     return fun2
 
 
 def synchronous_gtk_message(fun):
 
-    def worker((result, function, args, kwargs)):
-        result['result'] = function(*args, **kwargs)
+    def worker((result, args, kwargs)):
+        result['result'] = fun(*args, **kwargs)
 
     def fun2(*args, **kwargs):
         result = {'result': None}
-        gobject.idle_add(worker, (result, fun, args, kwargs))
+        gobject.idle_add(worker, (result, args, kwargs))
         while result['result'] is None:
             time.sleep(0.01)
         return result['result']
