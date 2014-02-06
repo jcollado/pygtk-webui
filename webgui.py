@@ -101,14 +101,15 @@ def launch_browser(uri, quit_function=None, echo=True):
     browser.connect('title-changed', title_changed)
     browser.open(uri)
 
-    def web_recv():
-        if message_queue.empty():
+    def web_recv(timeout=0.1):
+        try:
+            msg = message_queue.get(timeout=timeout)
+        except Queue.Empty:
             return None
-        else:
-            msg = message_queue.get()
-            if echo:
-                print '>>>', msg
-            return msg
+
+        if echo:
+            print '>>>', msg
+        return msg
 
     def web_send(msg):
         if echo:

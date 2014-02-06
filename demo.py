@@ -40,10 +40,7 @@ def main():
     clicks = 0
     while not Global.quit:
         current_time = time.time()
-        again = False
         msg = web_recv()
-        if msg:
-            again = True
 
         if msg == "clicked":
             clicks += 1
@@ -53,11 +50,6 @@ def main():
             web_send('$uptime_value.text("{}")'.format(uptime_seconds))
             uptime_seconds += 1
             last_second += 1.0
-
-        if again:
-            pass
-        else:
-            time.sleep(0.1)
 
 
 def my_quit_wrapper(fun):
