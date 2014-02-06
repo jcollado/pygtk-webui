@@ -9,7 +9,7 @@ import webkit
 
 
 def asynchronous_gtk_message(fun):
-    """Call passed function thread running gtk main loop
+    """Call passed function thread running gtk main loop.
 
     :param fun: Function to be called in the thread running the gtk main loop
     :type fun: callable
@@ -27,7 +27,7 @@ def asynchronous_gtk_message(fun):
 
 
 def synchronous_gtk_message(fun):
-    """Call passed function thread running gtk main loop and wait for result
+    """Call passed function thread running gtk main loop and wait for result.
 
     :param fun: Function to be called in the thread running the gtk main loop
     :type fun: callable
@@ -120,10 +120,11 @@ def launch_browser(uri, quit_function=None, echo=True):
 
 
 def start_gtk_thread():
-    # Start GTK in its own thread:
+    """Start GTK in its own thread."""
     gtk.gdk.threads_init()
     thread.start_new_thread(gtk.main, ())
 
 
 def kill_gtk_thread():
+    """Terminate GTK thread."""
     asynchronous_gtk_message(gtk.main_quit)()

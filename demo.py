@@ -39,14 +39,13 @@ def main():
     uptime_seconds = 1
     clicks = 0
     while not Global.quit:
-
         current_time = time.time()
         again = False
         msg = web_recv()
         if msg:
             again = True
 
-        if msg == "got-a-click":
+        if msg == "clicked":
             clicks += 1
             web_send('$messages.text("{} clicks so far")'.format(clicks))
 
