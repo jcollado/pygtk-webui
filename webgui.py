@@ -1,6 +1,6 @@
 import Queue
 import thread
-import time
+import threading
 
 import gtk
 import gobject
@@ -9,6 +9,13 @@ import webkit
 
 
 def asynchronous_gtk_message(fun):
+    """Call passed function thread running gtk main loop
+
+    :param fun: Function to be called in the thread running the gtk main loop
+    :type fun: callable
+    :returns: A function that wraps the original function
+
+    """
 
     def worker((args, kwargs)):
         fun(*args, **kwargs)
@@ -20,15 +27,25 @@ def asynchronous_gtk_message(fun):
 
 
 def synchronous_gtk_message(fun):
+    """Call passed function thread running gtk main loop and wait for result
+
+    :param fun: Function to be called in the thread running the gtk main loop
+    :type fun: callable
+    :returns: A function that wraps the original function
+
+    """
+    condition = threading.Condition()
 
     def worker((result, args, kwargs)):
-        result['result'] = fun(*args, **kwargs)
+        with condition:
+            result['result'] = fun(*args, **kwargs)
+            condition.notify()
 
     def fun2(*args, **kwargs):
-        result = {'result': None}
-        gobject.idle_add(worker, (result, args, kwargs))
-        while result['result'] is None:
-            time.sleep(0.01)
+        with condition:
+            result = {'result': None}
+            gobject.idle_add(worker, (result, args, kwargs))
+            condition.wait()
         return result['result']
 
     return fun2
