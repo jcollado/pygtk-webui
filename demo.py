@@ -16,9 +16,6 @@ from webgui import (
     )
 
 
-QUIT = threading.Event()
-
-
 def trace(func):
     """Tracing wrapper to log when function enter/exit happens."""
     @wraps(func)
@@ -31,8 +28,10 @@ def trace(func):
 
 
 class Application(UIFile):
-    def __init__(self):
+    def __init__(self, quit):
         UIFile.__init__(self, 'demo.ui')
+
+        self.quit = quit
 
         # glade should take care of this relationship,
         # but I haven't found how to do it
@@ -52,11 +51,11 @@ class Application(UIFile):
 
     @trace
     def quit_activate_cb(self, args):
-        QUIT.set()
+        self.quit.set()
 
     @trace
     def window_destroy_cb(self, args):
-        QUIT.set()
+        self.quit.set()
 
 
 def main():
@@ -64,14 +63,16 @@ def main():
         level=logging.DEBUG,
         format='%(levelname)s: %(message)s')
 
+    quit = threading.Event()
+
     @trace
     def sigint_handler(*args):
         """Exit on Ctrl+C"""
-        QUIT.set()
+        quit.set()
 
     signal.signal(signal.SIGINT, sigint_handler)
 
-    application = GtkThread.synchronous_message(Application)()
+    application = GtkThread.synchronous_message(Application)(quit)
     application.main()
     browser = application.browser
 
@@ -80,7 +81,7 @@ def main():
     last_second = time.time()
     uptime_seconds = 1
     clicks = 0
-    while not QUIT.is_set():
+    while not quit.is_set():
         current_time = time.time()
         message = browser.receive()
 
