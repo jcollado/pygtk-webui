@@ -11,11 +11,8 @@ from functools import wraps
 from uifile import UIFile
 
 from webgui import (
-    asynchronous_gtk_message,
     Browser,
-    kill_gtk_thread,
-    start_gtk_thread,
-    synchronous_gtk_message,
+    GtkThread,
     )
 
 
@@ -48,19 +45,17 @@ class Application(UIFile):
         self.vbox.pack_start(
             self.browser.widget, expand=True, fill=True, padding=0)
 
-    @asynchronous_gtk_message
+    @GtkThread.asynchronous_message
     @trace
     def main(self):
         self.window.show_all()
 
     @trace
     def quit_activate_cb(self, args):
-        logging.debug('quit')
         QUIT.set()
 
     @trace
     def window_destroy_cb(self, args):
-        logging.debug('window_destroy_cb')
         QUIT.set()
 
 
@@ -69,8 +64,6 @@ def main():
         level=logging.DEBUG,
         format='%(levelname)s: %(message)s')
 
-    start_gtk_thread()
-
     @trace
     def sigint_handler(*args):
         """Exit on Ctrl+C"""
@@ -78,7 +71,7 @@ def main():
 
     signal.signal(signal.SIGINT, sigint_handler)
 
-    application = synchronous_gtk_message(Application)()
+    application = GtkThread.synchronous_message(Application)()
     application.main()
     browser = application.browser
 
@@ -102,8 +95,5 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
+    with GtkThread():
         main()
-    finally:
-        kill_gtk_thread()
-        QUIT.set()

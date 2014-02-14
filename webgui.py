@@ -22,7 +22,7 @@ class Browser(object):
 
     def send(self, message):
         logging.debug('<<< %s', message)
-        asynchronous_gtk_message(
+        GtkThread.asynchronous_message(
             self.widget.execute_script)(message)
 
     def receive(self, timeout=0.1):
@@ -35,56 +35,64 @@ class Browser(object):
         return message
 
 
-def start_gtk_thread():
-    """Start GTK in its own thread."""
-    logging.debug('Starting gtk thread...')
-    gtk.gdk.threads_init()
-    thread = threading.Thread(target=gtk.main)
-    thread.start()
+class GtkThread(object):
+    def start(self):
+        """Start GTK in its own thread."""
+        gtk.gdk.threads_init()
+        self.thread = threading.Thread(target=gtk.main)
+        self.thread.start()
 
+    def kill(self):
+        """Terminate GTK thread."""
+        GtkThread.asynchronous_message(gtk.main_quit)()
+        self.thread.join()
 
-def kill_gtk_thread():
-    """Terminate GTK thread."""
-    asynchronous_gtk_message(gtk.main_quit)()
+    def __enter__(self):
+        """Start thread when entering into context manager."""
+        self.start()
 
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        """Kill thread when exiting from context manager."""
+        self.kill()
 
-def asynchronous_gtk_message(fun):
-    """Call function in thread running gtk main loop.
+    @classmethod
+    def asynchronous_message(cls, fun):
+        """Call function in thread running gtk main loop.
 
-    :param fun: Function to call in the thread running the gtk main loop
-    :type fun: callable
-    :returns: A function that wraps the original function
+        :param fun: Function to call in the thread running the gtk main loop
+        :type fun: callable
+        :returns: A function that wraps the original function
 
-    """
-    def worker((args, kwargs)):
-        fun(*args, **kwargs)
+        """
+        def worker((args, kwargs)):
+            fun(*args, **kwargs)
 
-    def fun2(*args, **kwargs):
-        gobject.idle_add(worker, (args, kwargs))
+        def fun2(*args, **kwargs):
+            gobject.idle_add(worker, (args, kwargs))
 
-    return fun2
+        return fun2
 
+    @classmethod
+    def synchronous_message(cls, fun):
+        """Call function in thread running gtk main loop and return result.
 
-def synchronous_gtk_message(fun):
-    """Call function in thread running gtk main loop and return result.
+        :param fun: Function to call in the thread running the gtk main loop
+        :type fun: callable
+        :returns: A function that wraps the original function
 
-    :param fun: Function to call in the thread running the gtk main loop
-    :type fun: callable
-    :returns: A function that wraps the original function
+        """
+        condition = threading.Condition()
 
-    """
-    condition = threading.Condition()
+        def worker((result, args, kwargs)):
+            with condition:
+                result['result'] = fun(*args, **kwargs)
+                condition.notify()
 
-    def worker((result, args, kwargs)):
-        with condition:
-            result['result'] = fun(*args, **kwargs)
-            condition.notify()
+        def fun2(*args, **kwargs):
+            with condition:
+                result = {'result': None}
+                gobject.idle_add(worker, (result, args, kwargs))
+                condition.wait()
+            return result['result']
 
-    def fun2(*args, **kwargs):
-        with condition:
-            result = {'result': None}
-            gobject.idle_add(worker, (result, args, kwargs))
-            condition.wait()
-        return result['result']
-
-    return fun2
+        return fun2
