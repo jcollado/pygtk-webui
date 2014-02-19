@@ -86,6 +86,10 @@ def main():
     browser = application.browser
 
     # Custom main loop to communicate gtk and webkit
+    # Note: There must be some timeout in the loop to give a chance to the
+    # signal handler to execute. Otherwise, if the main thread is blocked
+    # waiting for a message in a queue, then it might now handle timely the
+    # SIGINT signal.
     while not quit.is_set():
         browser.receive(timeout=1)
 
