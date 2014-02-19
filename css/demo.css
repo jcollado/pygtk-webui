@@ -1,0 +1,11 @@
+svg {
+  background-color: #eee;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+.bar:hover {
+    fill: brown;
+}
