@@ -42,8 +42,11 @@ class Application(UIFile):
         # but I haven't found how to do it
         self.window.add_accel_group(self.accel_group)
 
-        # Create a proper file:// URL pointing to demo.html:
-        fname = os.path.abspath('demo.html')
+        # Create a proper file:// URL pointing to index.html:
+        fname = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'html',
+            'index.html')
         uri = 'file://' + urllib.pathname2url(fname)
         self.browser = Browser(uri)
         self.vbox.pack_start(
