@@ -21,7 +21,7 @@ class Browser(object):
             self.message_queue.put(title)
 
     def send(self, message):
-        logging.debug('<<< %s', message)
+        logging.debug('(gtk -> webkit) %s', message)
         GtkThread.asynchronous_message(
             self.widget.execute_script)(message)
 
@@ -31,7 +31,7 @@ class Browser(object):
         except Queue.Empty:
             return None
 
-        logging.debug('>>> %s', message)
+        logging.debug('(webkit -> gtk) %s', message)
         return message
 
 
