@@ -9,23 +9,56 @@ import webkit
 
 
 class Browser(object):
-    """Webkit browser wrapper to exchange messages with pygtk."""
+    """Webkit browser wrapper to exchange messages with pygtk.
+
+    :param uri: URI to the HTML file to be displayed.
+    :type uri: str
+
+    """
     def __init__(self, uri):
         self.widget = webkit.WebView()
         self.widget.open(uri)
         self.message_queue = Queue.Queue()
-        self.widget.connect('title-changed', self.title_changed)
+        self.widget.connect('title-changed', self.title_changed_cb)
 
-    def title_changed(self, _widget, _frame, title):
+    def title_changed_cb(self, _widget, _frame, title):
+        """Put window title in the message queue.
+
+        Window title changes are received as an event in the Gtk interface.
+        This is used as a hack to make it possible to send messages from webkit
+        to Gtk.
+
+        :param title: Window title
+        :type title: str
+
+        """
         if title != 'null':
             self.message_queue.put(title)
 
     def send(self, message):
+        """Send message from gtk to webkit.
+
+        :param message: javascript code to execute in the browser widget
+        :type message: str
+
+        """
         logging.debug('(gtk -> webkit) %s', message)
         GtkThread.asynchronous_message(
             self.widget.execute_script)(message)
 
-    def receive(self, timeout=0.1):
+    def receive(self, timeout=None):
+        """Receive message from webkit in gtk.
+
+        Message sending happens through window title change events as explained
+        in :meth:`title_changed_cb`
+
+        :param timeout:
+            Time in seconds to wait for message in the queue (None by default)
+        :type timeout: float
+        :return: Message received from the webkit widget (None on timeout)
+        :rtype: str | None
+
+        """
         try:
             message = self.message_queue.get(timeout=timeout)
         except Queue.Empty:
