@@ -52,7 +52,11 @@
         return d.value;
         })
       ];
+
     var y_scale = d3.scale.linear()
+      .range([height, 0])
+      .domain(y_extent);
+    var height_scale = d3.scale.linear()
       .range([0, height])
       .domain(y_extent);
 
@@ -70,11 +74,11 @@
               return i*(barWidth + barSpace);
             })
             .attr("y", function(d) {
-              return height - y_scale(d.value);
+              return y_scale(d.value);
             })
             .attr("width", barWidth)
             .attr("height", function(d) {
-              return y_scale(d.value);
+              return height_scale(d.value);
             });
   }
 
