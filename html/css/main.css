@@ -1,4 +1,6 @@
 svg {
+  display: block;
+  margin: auto;
   background-color: #eee;
 }
 
