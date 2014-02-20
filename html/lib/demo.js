@@ -50,12 +50,11 @@
     var barSpace = 5;
     var barWidth = (width / dataset.length) - barSpace;
 
-    var xExtent = d3.extent(dataset, function(d) {
-      return d.date;
-    });
-    var xScale = d3.time.scale()
-      .range([0, width])
-      .domain(xExtent);
+    var xScale = d3.scale.ordinal()
+      .domain(dataset.map(function(d) {
+        return d.date;
+      }))
+      .rangeRoundBands([0, width], 0.1);
 
     var yExtent = [
       0,
@@ -89,7 +88,7 @@
         .attr("y", function(d) {
           return yScale(d.value);
         })
-        .attr("width", barWidth)
+        .attr("width", xScale.rangeBand())
         .attr("height", function(d) {
           return heightScale(d.value);
         });
@@ -97,7 +96,7 @@
     var xAxis = d3.svg.axis()
       .scale(xScale)
       .orient("bottom")
-      .tickFormat(d3.time.format("%B"));
+      .tickFormat(d3.time.format("%b"));
 
     svg.append("g")
       .attr("class", "axis")
