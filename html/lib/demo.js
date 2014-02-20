@@ -2,6 +2,8 @@
   "use strict";
   console.log("d3 version: " + d3.version);
 
+  var dateFormat = d3.time.format("%Y-%m");
+
   // Send data to gtk application by updating the window title
   // (this generates an event in the gtk interface)
   function send(msg) {
@@ -16,8 +18,13 @@
   }
 
   // Generate random data to plot
+  // This is useful to test the d3.js interface in the browser
+  // without gtk
   function genRandomDataset() {
     var dataset = [];
+
+    var year = 2013;
+
     var minValue = 1;
     var maxValue = 20;
 
@@ -27,7 +34,7 @@
 
     for (var month=0; month<12; month++) {
       var data = {
-        "date": new Date(2013, month),
+        "date": dateFormat(new Date(year, month)),
         "value": getRandomValue(),
       };
 
@@ -38,8 +45,11 @@
   }
 
   // Draw bars in an svg element through d3.js
-  function draw() {
-    var dataset = genRandomDataset();
+  function draw(dataset) {
+    // Map date strings to date objects
+    dataset.forEach(function(d) {
+      d.date = dateFormat.parse(d.date);
+    });
 
     // margin, width and height defined according to the convention:
     // http://bl.ocks.org/mbostock/3019563
@@ -128,6 +138,11 @@
       .call(yAxis);
   }
 
+  // Make draw function available to gtk
+  window.draw = draw;
+
   send("document-ready");
-  draw();
+
+  // Uncomment to test d3.js interface in a browser
+  //draw(genRandomDataset());
 })();

@@ -1,6 +1,8 @@
 #!/usr/bin/python
+import json
 import logging
 import os
+import random
 import signal
 import threading
 import urllib
@@ -59,6 +61,23 @@ class Application(UIFile):
         self.window.show_all()
 
     @trace
+    def gen_random_dataset(self):
+        """Generate random data for the demo."""
+        year = 2013
+        month_count = 12
+        min_value = 1
+        max_value = 20
+
+        dataset = [
+            {'date': '{}-{:02d}'.format(year, month),
+             'value': random.randint(min_value, max_value),
+             }
+            for month in range(1, month_count + 1)
+        ]
+
+        return dataset
+
+    @trace
     def quit_activate_cb(self, _menuitem):
         """Quit application when quit menu item is activated."""
         self.quit.set()
@@ -94,7 +113,11 @@ def main():
     # waiting for a message in a queue, then it might now handle timely the
     # SIGINT signal.
     while not quit.is_set():
-        browser.receive(timeout=1)
+        message = browser.receive(timeout=1)
+        if message == "document-ready":
+            browser.send(
+                "draw({})"
+                .format(json.dumps(application.gen_random_dataset())))
 
 if __name__ == '__main__':
     with GtkThread():
