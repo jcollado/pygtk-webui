@@ -41,45 +41,75 @@
   function draw() {
     var dataset = genRandomDataset();
 
-    var width = 750;
-    var height = 450;
+    // margin, width and height defined according to the convention:
+    // http://bl.ocks.org/mbostock/3019563
+    var margin = {top: 20, right: 10, bottom: 30, left: 30};
+    var width = 750 - margin.left - margin.right;
+    var height = 450 - margin.top - margin.bottom;
+
     var barSpace = 5;
     var barWidth = (width / dataset.length) - barSpace;
 
-    var y_extent = [
+    var xExtent = d3.extent(dataset, function(d) {
+      return d.date.getMonth() + 1;
+    });
+    var xScale = d3.scale.linear()
+      .range([0, width])
+      .domain(xExtent);
+
+    var yExtent = [
       0,
       d3.max(dataset, function(d) {
         return d.value;
         })
       ];
-
-    var y_scale = d3.scale.linear()
+    var yScale = d3.scale.linear()
       .range([height, 0])
-      .domain(y_extent);
-    var height_scale = d3.scale.linear()
+      .domain(yExtent);
+    var heightScale = d3.scale.linear()
       .range([0, height])
-      .domain(y_extent);
+      .domain(yExtent);
 
-    d3.select("body")
+    var svg = d3.select("body")
       .append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
         .append("g")
-          .selectAll("rect")
-          .data(dataset)
-          .enter()
-          .append("rect")
-            .attr("class", "bar")
-            .attr("x", function(d, i) {
-              return i*(barWidth + barSpace);
-            })
-            .attr("y", function(d) {
-              return y_scale(d.value);
-            })
-            .attr("width", barWidth)
-            .attr("height", function(d) {
-              return height_scale(d.value);
-            });
+          .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    svg.append("g")
+      .selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d, i) {
+          return i*(barWidth + barSpace);
+        })
+        .attr("y", function(d) {
+          return yScale(d.value);
+        })
+        .attr("width", barWidth)
+        .attr("height", function(d) {
+          return heightScale(d.value);
+        });
+
+    var xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom");
+
+    svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0, " + height + ")")
+      .call(xAxis);
+
+    var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left");
+
+    svg.append("g")
+      .attr("class", "axis")
+      .call(yAxis);
   }
 
   send("document-ready");
