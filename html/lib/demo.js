@@ -25,7 +25,7 @@
       return getRandomInt(minValue, maxValue);
     }
 
-    for (var month=1; month<=12; month++) {
+    for (var month=0; month<12; month++) {
       var data = {
         "date": new Date(2013, month),
         "value": getRandomValue(),
@@ -51,9 +51,9 @@
     var barWidth = (width / dataset.length) - barSpace;
 
     var xExtent = d3.extent(dataset, function(d) {
-      return d.date.getMonth() + 1;
+      return d.date;
     });
-    var xScale = d3.scale.linear()
+    var xScale = d3.time.scale()
       .range([0, width])
       .domain(xExtent);
 
@@ -83,8 +83,8 @@
       .enter()
       .append("rect")
         .attr("class", "bar")
-        .attr("x", function(d, i) {
-          return i*(barWidth + barSpace);
+        .attr("x", function(d) {
+          return xScale(d.date);
         })
         .attr("y", function(d) {
           return yScale(d.value);
@@ -96,7 +96,8 @@
 
     var xAxis = d3.svg.axis()
       .scale(xScale)
-      .orient("bottom");
+      .orient("bottom")
+      .tickFormat(d3.time.format("%B"));
 
     svg.append("g")
       .attr("class", "axis")
