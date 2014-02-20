@@ -43,7 +43,7 @@
 
     // margin, width and height defined according to the convention:
     // http://bl.ocks.org/mbostock/3019563
-    var margin = {top: 20, right: 10, bottom: 30, left: 30};
+    var margin = {top: 20, right: 10, bottom: 30, left: 40};
     var width = 750 - margin.left - margin.right;
     var height = 450 - margin.top - margin.bottom;
 
@@ -91,6 +91,22 @@
         .attr("width", xScale.rangeBand())
         .attr("height", function(d) {
           return heightScale(d.value);
+        });
+
+    svg.append("g")
+      .selectAll("text")
+      .data(dataset)
+      .enter()
+      .append("text")
+        .attr("class", "label")
+        .attr("x", function(d) {
+          return xScale(d.date) + xScale.rangeBand() / 2;
+        })
+        .attr("y", function(d) {
+            return yScale(d.value) + 16;
+        })
+        .text(function(d) {
+          return d.value;
         });
 
     var xAxis = d3.svg.axis()

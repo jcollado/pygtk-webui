@@ -11,9 +11,14 @@ svg {
 }
 
 .bar {
-    fill: steelblue;
+  fill: steelblue;
 }
 
 .bar:hover {
-    fill: brown;
+  fill: brown;
+}
+
+.label {
+  fill: white;
+  text-anchor: middle;
 }
