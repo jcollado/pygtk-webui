@@ -3,6 +3,14 @@
   console.log("d3 version: " + d3.version);
 
   var dateFormat = d3.time.format("%Y-%m");
+  var year = 2013;
+
+  var minValue = 1;
+  var maxValue = 20;
+
+  var xScale;
+  var yScale;
+  var heightScale;
 
   // Send data to gtk application by updating the window title
   // (this generates an event in the gtk interface)
@@ -17,16 +25,28 @@
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
+  // Generate baseline data
+  // This is just to draw axes and get ready to get data from gtk
+  function genBaselineDataset() {
+    var dataset = [];
+
+    for (var month=0; month<12; month++) {
+      var data = {
+        "date": dateFormat(new Date(year, month)),
+        "value": 0,
+      };
+
+      dataset.push(data);
+    }
+
+    return dataset;
+  }
+
   // Generate random data to plot
   // This is useful to test the d3.js interface in the browser
   // without gtk
   function genRandomDataset() {
     var dataset = [];
-
-    var year = 2013;
-
-    var minValue = 1;
-    var maxValue = 20;
 
     function getRandomValue() {
       return getRandomInt(minValue, maxValue);
@@ -44,8 +64,10 @@
     return dataset;
   }
 
-  // Draw bars in an svg element through d3.js
-  function draw(dataset) {
+  // Create svg element and draw axes
+  function setup() {
+    var dataset = genBaselineDataset();
+
     // Map date strings to date objects
     dataset.forEach(function(d) {
       d.date = dateFormat.parse(d.date);
@@ -60,22 +82,17 @@
     var barSpace = 5;
     var barWidth = (width / dataset.length) - barSpace;
 
-    var xScale = d3.scale.ordinal()
+    xScale = d3.scale.ordinal()
       .domain(dataset.map(function(d) {
         return d.date;
       }))
       .rangeRoundBands([0, width], 0.1);
 
-    var yExtent = [
-      0,
-      d3.max(dataset, function(d) {
-        return d.value;
-        })
-      ];
-    var yScale = d3.scale.linear()
+    var yExtent = [0, maxValue];
+    yScale = d3.scale.linear()
       .range([height, 0])
       .domain(yExtent);
-    var heightScale = d3.scale.linear()
+    heightScale = d3.scale.linear()
       .range([0, height])
       .domain(yExtent);
 
@@ -86,9 +103,29 @@
         .append("g")
           .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
+    var xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom")
+      .tickFormat(d3.time.format("%b"));
+
+    svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0, " + height + ")")
+      .call(xAxis);
+
+    var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left");
+
+    svg.append("g")
+      .attr("class", "axis")
+      .call(yAxis);
+
     svg.append("g")
       .selectAll("rect")
-      .data(dataset)
+      .data(dataset, function(d) {
+        return d.date;
+      })
       .enter()
       .append("rect")
         .attr("class", "bar")
@@ -112,35 +149,43 @@
         .attr("x", function(d) {
           return xScale(d.date) + xScale.rangeBand() / 2;
         })
+        .attr("y", height);
+  }
+
+  // Draw bars in svg element through d3.js
+  function draw(dataset) {
+    var svg = d3.select("svg");
+    var default_duration = 1000;
+
+    svg.selectAll(".bar", function(d) {
+        return d.date;
+      })
+      .data(dataset)
+      .transition()
+      .duration(default_duration)
+        .attr("y", function(d) {
+          return yScale(d.value);
+        })
+        .attr("height", function(d) {
+          return heightScale(d.value);
+        });
+
+    svg.selectAll(".label")
+      .data(dataset)
+      .transition()
+      .duration(default_duration)
         .attr("y", function(d) {
             return yScale(d.value) + 16;
         })
-        .text(function(d) {
-          return d.value;
-        });
-
-    var xAxis = d3.svg.axis()
-      .scale(xScale)
-      .orient("bottom")
-      .tickFormat(d3.time.format("%b"));
-
-    svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(0, " + height + ")")
-      .call(xAxis);
-
-    var yAxis = d3.svg.axis()
-      .scale(yScale)
-      .orient("left");
-
-    svg.append("g")
-      .attr("class", "axis")
-      .call(yAxis);
+      .text(function(d) {
+        return d.value;
+      });
   }
 
   // Make draw function available to gtk
   window.draw = draw;
 
+  setup();
   send("document-ready");
 
   // Uncomment to test d3.js interface in a browser
