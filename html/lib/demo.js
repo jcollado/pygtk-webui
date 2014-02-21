@@ -171,7 +171,7 @@
         return d.value;
       })];
 
-    // Adjust scales to new maxium value
+    // Adjust scales to new maximum value
     yScale.domain(yExtent);
     heightScale.domain(yExtent);
 
