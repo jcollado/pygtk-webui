@@ -51,7 +51,7 @@ class Application(UIFile):
             'index.html')
         uri = 'file://' + urllib.pathname2url(fname)
         self.browser = Browser(uri)
-        self.vbox.pack_start(
+        self.browser_box.pack_start(
             self.browser.widget, expand=True, fill=True, padding=0)
 
     @GtkThread.asynchronous_message
@@ -76,6 +76,12 @@ class Application(UIFile):
         ]
 
         return dataset
+
+    @trace
+    def random_data_btn_clicked_cb(self, _button):
+        """Send new random dataset to browser."""
+        dataset = self.gen_random_dataset()
+        self.browser.send('draw({})'.format(json.dumps(dataset)))
 
     @trace
     def quit_activate_cb(self, _menuitem):
@@ -115,9 +121,7 @@ def main():
     while not quit.is_set():
         message = browser.receive(timeout=1)
         if message == "document-ready":
-            browser.send(
-                "draw({})"
-                .format(json.dumps(application.gen_random_dataset())))
+            application.random_data_btn.emit('clicked')
 
 if __name__ == '__main__':
     with GtkThread():
