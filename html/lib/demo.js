@@ -12,6 +12,8 @@
   var yScale;
   var heightScale;
 
+  var yAxis;
+
   // Send data to gtk application by updating the window title
   // (this generates an event in the gtk interface)
   function send(msg) {
@@ -34,6 +36,7 @@
       var data = {
         "date": dateFormat(new Date(year, month)),
         "value": 0,
+
       };
 
       dataset.push(data);
@@ -88,7 +91,12 @@
       }))
       .rangeRoundBands([0, width], 0.1);
 
-    var yExtent = [0, maxValue];
+    var yExtent = [0,
+      d3.max(dataset, function(d) {
+        return d.value;
+      })];
+    console.log(yExtent[0]);
+    console.log(yExtent[1]);
     yScale = d3.scale.linear()
       .range([height, 0])
       .domain(yExtent);
@@ -113,12 +121,12 @@
       .attr("transform", "translate(0, " + height + ")")
       .call(xAxis);
 
-    var yAxis = d3.svg.axis()
+    yAxis = d3.svg.axis()
       .scale(yScale)
       .orient("left");
 
     svg.append("g")
-      .attr("class", "axis")
+      .attr("class", "y axis")
       .call(yAxis);
 
     svg.append("g")
@@ -157,6 +165,23 @@
     var svg = d3.select("svg");
     var default_duration = 1000;
 
+    // Find new maximum value
+    var yExtent = [0,
+      d3.max(dataset, function(d) {
+        return d.value;
+      })];
+
+    // Adjust scales to new maxium value
+    yScale.domain(yExtent);
+    heightScale.domain(yExtent);
+
+    // Update y axis
+    svg.select(".y.axis")
+      .transition()
+      .duration(default_duration)
+      .call(yAxis);
+
+    // Update bars height
     svg.selectAll(".bar", function(d) {
         return d.date;
       })
@@ -170,6 +195,7 @@
           return heightScale(d.value);
         });
 
+    // Update labels text
     svg.selectAll(".label")
       .data(dataset)
       .transition()
