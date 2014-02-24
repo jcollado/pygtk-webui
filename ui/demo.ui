@@ -70,7 +70,7 @@
             </attributes>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="padding">10</property>
             <property name="position">1</property>
@@ -85,35 +85,45 @@
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
         <child>
-          <object class="GtkTreeView" id="data_treeview">
+          <object class="GtkScrolledWindow" id="data_scrolledwindow">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="model">data_store</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
             <child>
-              <object class="GtkTreeViewColumn" id="date_column">
-                <property name="title" translatable="yes">Date</property>
+              <object class="GtkTreeView" id="data_treeview">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="model">data_store</property>
+                <property name="headers_clickable">False</property>
+                <property name="search_column">0</property>
                 <child>
-                  <object class="GtkCellRendererText" id="date_renderer"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
+                  <object class="GtkTreeViewColumn" id="date_column">
+                    <property name="title" translatable="yes">Date</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="date_renderer"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkTreeViewColumn" id="value_column">
-                <property name="title" translatable="yes">Value</property>
                 <child>
-                  <object class="GtkCellRendererText" id="value_renderer"/>
-                  <attributes>
-                    <attribute name="text">1</attribute>
-                  </attributes>
+                  <object class="GtkTreeViewColumn" id="value_column">
+                    <property name="title" translatable="yes">Value</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="value_renderer"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
                 </child>
               </object>
             </child>
@@ -145,7 +155,7 @@
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="padding">10</property>
             <property name="position">4</property>
