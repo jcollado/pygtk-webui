@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import json
 import logging
+import operator
 import os
 import random
 import signal
@@ -74,6 +75,13 @@ class Application(UIFile):
              }
             for month in range(1, month_count + 1)
         ]
+
+        # Sync random data with data_store
+        self.data_store.clear()
+        data_to_tuple = operator.itemgetter('date', 'value')
+        for data in dataset:
+            self.data_store.append(
+                data_to_tuple(data))
 
         return dataset
 
