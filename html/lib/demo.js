@@ -95,8 +95,6 @@
       d3.max(dataset, function(d) {
         return d.value;
       })];
-    console.log(yExtent[0]);
-    console.log(yExtent[1]);
     yScale = d3.scale.linear()
       .range([height, 0])
       .domain(yExtent);
@@ -117,7 +115,7 @@
       .tickFormat(d3.time.format("%b"));
 
     svg.append("g")
-      .attr("class", "axis")
+      .attr("class", "x axis")
       .attr("transform", "translate(0, " + height + ")")
       .call(xAxis);
 
@@ -130,6 +128,7 @@
       .call(yAxis);
 
     svg.append("g")
+      .attr("class", "bars")
       .selectAll("rect")
       .data(dataset, function(d) {
         return d.date;
@@ -149,6 +148,7 @@
         });
 
     svg.append("g")
+      .attr("class", "labels")
       .selectAll("text")
       .data(dataset)
       .enter()
