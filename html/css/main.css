@@ -1,7 +1,10 @@
+body {
+  background-color: #e0e0e0;
+}
+
 svg {
   display: block;
   margin: auto;
-  background-color: #eee;
 }
 
 .axis path, .axis line {
