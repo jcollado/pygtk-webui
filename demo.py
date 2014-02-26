@@ -72,6 +72,7 @@ class Application(UIFile):
         dataset = [
             {'date': '{}-{:02d}'.format(year, month),
              'value': random.randint(min_value, max_value),
+             'selected': False,
              }
             for month in range(1, month_count + 1)
         ]
@@ -89,6 +90,19 @@ class Application(UIFile):
     def random_data_btn_clicked_cb(self, _button):
         """Send new random dataset to browser."""
         dataset = self.gen_random_dataset()
+        self.browser.send('draw({})'.format(json.dumps(dataset)))
+
+    @trace
+    def data_treeview_cursor_changed_cb(self, treeview):
+        path, column = treeview.get_cursor()
+        selected_row = self.data_store[path]
+        logging.debug("selected row: %s", selected_row)
+
+        dataset = [
+            {'date': r[0],
+             'value': r[1],
+             'selected': True if r.path == selected_row.path else False}
+            for r in self.data_store]
         self.browser.send('draw({})'.format(json.dumps(dataset)))
 
     @trace

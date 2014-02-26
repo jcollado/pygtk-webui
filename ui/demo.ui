@@ -8,7 +8,7 @@
       <!-- column-name Date -->
       <column type="gchararray"/>
       <!-- column-name Value -->
-      <column type="gchararray"/>
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
@@ -103,6 +103,7 @@
                 <property name="model">data_store</property>
                 <property name="headers_clickable">False</property>
                 <property name="search_column">0</property>
+                <signal name="cursor-changed" handler="data_treeview_cursor_changed_cb" swapped="no"/>
                 <child>
                   <object class="GtkTreeViewColumn" id="date_column">
                     <property name="title" translatable="yes">Date</property>

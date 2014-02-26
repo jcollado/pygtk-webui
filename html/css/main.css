@@ -17,7 +17,7 @@ svg {
   fill: steelblue;
 }
 
-.bar:hover {
+.bar:hover, .bar.selected {
   fill: brown;
 }
 

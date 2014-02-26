@@ -36,7 +36,7 @@
       var data = {
         "date": dateFormat(new Date(year, month)),
         "value": 0,
-
+        "selected": false,
       };
 
       dataset.push(data);
@@ -59,6 +59,7 @@
       var data = {
         "date": dateFormat(new Date(year, month)),
         "value": getRandomValue(),
+        "selected": false,
       };
 
       dataset.push(data);
@@ -136,6 +137,9 @@
       .enter()
       .append("rect")
         .attr("class", "bar")
+        .classed("selected", function(d) {
+          return d.selected;
+        })
         .attr("x", function(d) {
           return xScale(d.date);
         })
@@ -186,6 +190,9 @@
         return d.date;
       })
       .data(dataset)
+      .classed("selected", function(d) {
+        return d.selected;
+      })
       .transition()
       .duration(default_duration)
         .attr("y", function(d) {
