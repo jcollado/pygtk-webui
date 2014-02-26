@@ -79,7 +79,7 @@ class Application(UIFile):
 
         # Sync random data with data_store
         self.data_store.clear()
-        data_to_tuple = operator.itemgetter('date', 'value')
+        data_to_tuple = operator.itemgetter('date', 'value', 'selected')
         for data in dataset:
             self.data_store.append(
                 data_to_tuple(data))
@@ -95,15 +95,18 @@ class Application(UIFile):
     @trace
     def data_treeview_cursor_changed_cb(self, treeview):
         path, column = treeview.get_cursor()
-        selected_row = self.data_store[path]
-        logging.debug("selected row: %s", selected_row)
 
-        dataset = [
-            {'date': r[0],
-             'value': r[1],
-             'selected': True if r.path == selected_row.path else False}
-            for r in self.data_store]
-        self.browser.send('draw({})'.format(json.dumps(dataset)))
+        if column is self.selected_column:
+            row = self.data_store[path]
+            row[2] = not row[2]
+
+            dataset = [
+                {'date': r[0],
+                 'value': r[1],
+                 'selected': r[2],
+                 }
+                for r in self.data_store]
+            self.browser.send('draw({})'.format(json.dumps(dataset)))
 
     @trace
     def quit_activate_cb(self, _menuitem):

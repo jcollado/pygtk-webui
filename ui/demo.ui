@@ -9,6 +9,8 @@
       <column type="gchararray"/>
       <!-- column-name Value -->
       <column type="gint"/>
+      <!-- column-name Selected -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
@@ -104,6 +106,17 @@
                 <property name="headers_clickable">False</property>
                 <property name="search_column">0</property>
                 <signal name="cursor-changed" handler="data_treeview_cursor_changed_cb" swapped="no"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="selected_column">
+                    <property name="title" translatable="yes">Selected</property>
+                    <child>
+                      <object class="GtkCellRendererToggle" id="selected_renderer"/>
+                      <attributes>
+                        <attribute name="active">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="date_column">
                     <property name="title" translatable="yes">Date</property>
