@@ -14,11 +14,20 @@ svg {
 }
 
 .bar {
-  fill: steelblue;
+  fill: hsl(207.3,44%,49%);
+  cursor: pointer;
 }
 
-.bar:hover, .bar.selected {
-  fill: brown;
+.bar:hover {
+  fill: hsl(207.3,44%,39%)
+}
+
+.bar.selected {
+  fill: hsl(0,59.4%,40.6%);
+}
+
+.bar:hover.selected {
+  fill: hsl(0,59.4%,30.6%);
 }
 
 .label {
