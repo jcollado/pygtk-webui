@@ -94,6 +94,15 @@ class Application(UIFile):
 
     @trace
     def data_treeview_cursor_changed_cb(self, treeview):
+        """Change selected status for given row.
+
+        The change only happens when the selected column is selected.
+
+        :param treeview: Widget displaying data
+        :type treeview: gtk.TreeView
+
+        """
+
         path, column = treeview.get_cursor()
 
         if column is self.selected_column:
