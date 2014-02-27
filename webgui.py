@@ -1,3 +1,4 @@
+import json
 import logging
 import Queue
 import threading
@@ -60,10 +61,11 @@ class Browser(object):
 
         """
         try:
-            message = self.message_queue.get(timeout=timeout)
+            raw_message = self.message_queue.get(timeout=timeout)
         except Queue.Empty:
             return None
 
+        message = json.loads(raw_message)
         logging.debug('(webkit -> gtk) %s', message)
         return message
 

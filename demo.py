@@ -156,6 +156,10 @@ def main():
         message = browser.receive(timeout=1)
         if message == "document-ready":
             application.random_data_btn.emit('clicked')
+        elif isinstance(message, dict):
+            if message['event'] == 'bar-clicked':
+                application.data_treeview.set_cursor(
+                    message['index'], application.selected_column)
 
 if __name__ == '__main__':
     with GtkThread():

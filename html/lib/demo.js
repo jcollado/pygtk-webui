@@ -18,7 +18,7 @@
   // (this generates an event in the gtk interface)
   function send(msg) {
     document.title = "null";
-    document.title = msg;
+    document.title = JSON.stringify(msg);
   }
 
   // Returns a random integer between min and max
@@ -149,6 +149,14 @@
         .attr("width", xScale.rangeBand())
         .attr("height", function(d) {
           return heightScale(d.value);
+        })
+        .on("click", function(d, i) {
+          console.log("bar clicked: " + d.date + ", " + d.value + ", " + i);
+          send({
+            "event": "bar-clicked",
+            "data": d,
+            "index": i,
+          });
         });
 
     svg.append("g")
