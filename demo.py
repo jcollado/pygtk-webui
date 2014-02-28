@@ -5,18 +5,14 @@ import operator
 import os
 import random
 import signal
-import threading
-import time
 import urllib
+
+import gtk
 
 from functools import wraps
 
 from uifile import UIFile
-
-from webgui import (
-    Browser,
-    GtkThread,
-    )
+from browser import Browser
 
 
 def trace(func):
@@ -37,10 +33,8 @@ def trace(func):
 
 class Application(UIFile):
     """Gtk application."""
-    def __init__(self, quit):
+    def __init__(self):
         UIFile.__init__(self, 'demo.ui')
-
-        self.quit = quit
 
         # glade should take care of this relationship,
         # but I haven't found how to do it
@@ -74,11 +68,11 @@ class Application(UIFile):
         elif event == 'bar-clicked':
             self.selected_renderer.emit('toggled', message['index'])
 
-    @GtkThread.asynchronous_message
     @trace
     def main(self):
         """Main method used to display the application UI."""
         self.window.show_all()
+        gtk.main()
 
     @trace
     def gen_random_dataset(self):
@@ -136,12 +130,12 @@ class Application(UIFile):
     @trace
     def quit_activate_cb(self, _menuitem):
         """Quit application when quit menu item is activated."""
-        self.quit.set()
+        gtk.main_quit()
 
     @trace
     def window_destroy_cb(self, _window):
         """Quit application when main window is destroyed."""
-        self.quit.set()
+        gtk.main_quit()
 
 
 def main():
@@ -150,26 +144,15 @@ def main():
         level=logging.DEBUG,
         format='%(levelname)s: %(message)s')
 
-    quit = threading.Event()
-
     @trace
     def sigint_handler(*args):
         """Exit on Ctrl+C"""
-        quit.set()
+        gtk.main_quit()
 
     signal.signal(signal.SIGINT, sigint_handler)
 
-    application = GtkThread.synchronous_message(Application)(quit)
+    application = Application()
     application.main()
 
-    # Custom main loop to communicate gtk and webkit
-    # Note: There must be some timeout in the loop to give a chance to the
-    # signal handler to execute. Otherwise, if the main thread is blocked
-    # waiting for a message in a queue, then it might now handle timely the
-    # SIGINT signal.
-    while not quit.is_set():
-        time.sleep(1)
-
 if __name__ == '__main__':
-    with GtkThread():
-        main()
+    main()
