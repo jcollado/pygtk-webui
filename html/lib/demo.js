@@ -17,7 +17,6 @@
   // Send data to gtk application by updating the window title
   // (this generates an event in the gtk interface)
   function send(msg) {
-    document.title = "null";
     document.title = JSON.stringify(msg);
   }
 
@@ -227,7 +226,9 @@
   window.draw = draw;
 
   setup();
-  send("document-ready");
+  send({
+    "event": "document-ready"
+  });
 
   // Uncomment to test d3.js interface in a browser
   //draw(genRandomDataset());

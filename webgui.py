@@ -9,14 +9,21 @@ import gobject
 import webkit
 
 
-class Browser(object):
+class Browser(gobject.GObject):
     """Webkit browser wrapper to exchange messages with pygtk.
 
     :param uri: URI to the HTML file to be displayed.
     :type uri: str
 
     """
+    __gsignals__ = {
+        'message-received': (gobject.SIGNAL_RUN_FIRST, None, (object,))
+    }
+
     def __init__(self, uri):
+        # Initialize to be able to emit signals
+        gobject.GObject.__init__(self)
+
         self.widget = webkit.WebView()
         self.widget.open(uri)
         self.message_queue = Queue.Queue()
@@ -33,8 +40,9 @@ class Browser(object):
         :type title: str
 
         """
-        if title != 'null':
-            self.message_queue.put(title)
+        logging.debug('title changed: %r', title)
+        message = json.loads(title)
+        self.emit('message-received', message)
 
     def send(self, message):
         """Send message from gtk to webkit.
@@ -47,27 +55,8 @@ class Browser(object):
         GtkThread.asynchronous_message(
             self.widget.execute_script)(message)
 
-    def receive(self, timeout=None):
-        """Receive message from webkit in gtk.
-
-        Message sending happens through window title change events as explained
-        in :meth:`title_changed_cb`
-
-        :param timeout:
-            Time in seconds to wait for message in the queue (None by default)
-        :type timeout: float
-        :return: Message received from the webkit widget (None on timeout)
-        :rtype: str | None
-
-        """
-        try:
-            raw_message = self.message_queue.get(timeout=timeout)
-        except Queue.Empty:
-            return None
-
-        message = json.loads(raw_message)
-        logging.debug('(webkit -> gtk) %s', message)
-        return message
+# Register to be able to emit signals
+gobject.type_register(Browser)
 
 
 class GtkThread(object):

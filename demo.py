@@ -6,6 +6,7 @@ import os
 import random
 import signal
 import threading
+import time
 import urllib
 
 from functools import wraps
@@ -54,6 +55,24 @@ class Application(UIFile):
         self.browser = Browser(uri)
         self.browser_box.pack_start(
             self.browser.widget, expand=True, fill=True, padding=0)
+        self.browser.connect('message-received', self.message_received_cb)
+
+    def message_received_cb(self, browser, message):
+        """Handle message send by webbrowser.
+
+        :param browser: Browser object that sent the message
+        :type browser: webgui.Browser
+        :param message: Message containing event data
+        :type message: dict
+
+        """
+        logging.debug('(webkit -> gtk) %s', message)
+        assert isinstance(message, dict)
+        event = message['event']
+        if event == 'document-ready':
+            self.random_data_btn.emit('clicked')
+        elif event == 'bar-clicked':
+            self.selected_renderer.emit('toggled', message['index'])
 
     @GtkThread.asynchronous_message
     @trace
@@ -93,29 +112,26 @@ class Application(UIFile):
         self.browser.send('draw({})'.format(json.dumps(dataset)))
 
     @trace
-    def data_treeview_cursor_changed_cb(self, treeview):
-        """Change selected status for given row.
+    def selected_renderer_toggled_cb(self, renderer, path):
+        """Update model to check/uncheck row.
 
-        The change only happens when the selected column is selected.
-
-        :param treeview: Widget displaying data
-        :type treeview: gtk.TreeView
+        :param renderer: Renderer object that emitted the toggled event
+        :type renderer: gtk.CellRendererToggle
+        :param path: Path to the row that has been toggled
+        :type path: int
 
         """
+        logging.debug('selected renderer toggled: path: %s', path)
+        row = self.data_store[path]
+        row[2] = not row[2]
 
-        path, column = treeview.get_cursor()
-
-        if column is self.selected_column:
-            row = self.data_store[path]
-            row[2] = not row[2]
-
-            dataset = [
-                {'date': r[0],
-                 'value': r[1],
-                 'selected': r[2],
-                 }
-                for r in self.data_store]
-            self.browser.send('draw({})'.format(json.dumps(dataset)))
+        dataset = [
+            {'date': r[0],
+             'value': r[1],
+             'selected': r[2],
+             }
+            for r in self.data_store]
+        self.browser.send('draw({})'.format(json.dumps(dataset)))
 
     @trace
     def quit_activate_cb(self, _menuitem):
@@ -145,7 +161,6 @@ def main():
 
     application = GtkThread.synchronous_message(Application)(quit)
     application.main()
-    browser = application.browser
 
     # Custom main loop to communicate gtk and webkit
     # Note: There must be some timeout in the loop to give a chance to the
@@ -153,13 +168,7 @@ def main():
     # waiting for a message in a queue, then it might now handle timely the
     # SIGINT signal.
     while not quit.is_set():
-        message = browser.receive(timeout=1)
-        if message == "document-ready":
-            application.random_data_btn.emit('clicked')
-        elif isinstance(message, dict):
-            if message['event'] == 'bar-clicked':
-                application.data_treeview.set_cursor(
-                    message['index'], application.selected_column)
+        time.sleep(1)
 
 if __name__ == '__main__':
     with GtkThread():

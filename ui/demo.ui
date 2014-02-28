@@ -105,12 +105,13 @@
                 <property name="model">data_store</property>
                 <property name="headers_clickable">False</property>
                 <property name="search_column">0</property>
-                <signal name="cursor-changed" handler="data_treeview_cursor_changed_cb" swapped="no"/>
                 <child>
                   <object class="GtkTreeViewColumn" id="selected_column">
                     <property name="title" translatable="yes">Selected</property>
                     <child>
-                      <object class="GtkCellRendererToggle" id="selected_renderer"/>
+                      <object class="GtkCellRendererToggle" id="selected_renderer">
+                        <signal name="toggled" handler="selected_renderer_toggled_cb" swapped="no"/>
+                      </object>
                       <attributes>
                         <attribute name="active">2</attribute>
                       </attributes>
