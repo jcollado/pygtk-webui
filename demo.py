@@ -102,6 +102,7 @@ class Application(UIFile):
 
     @trace
     def update_graph(self):
+        """Update graph in the webkit widget."""
         dataset = [
             {'date': r[0],
              'value': r[1],
