@@ -91,7 +91,10 @@
       }))
       .rangeRoundBands([0, width], 0.1);
 
-    var yExtent = [0,
+    var yExtent = [
+      d3.min(dataset, function(d) {
+        return d.value;
+      }) - 1,
       d3.max(dataset, function(d) {
         return d.value;
       })];
@@ -177,7 +180,10 @@
     var default_duration = 1000;
 
     // Find new maximum value
-    var yExtent = [0,
+    var yExtent = [
+      d3.min(dataset, function(d) {
+        return d.value;
+      }) - 1,
       d3.max(dataset, function(d) {
         return d.value;
       })];
@@ -215,7 +221,7 @@
       .transition()
       .duration(default_duration)
         .attr("y", function(d) {
-            return yScale(d.value) + 16;
+            return yScale(d.value) - 5;
         })
       .text(function(d) {
         return d.value;

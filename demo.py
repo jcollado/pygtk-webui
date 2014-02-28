@@ -51,6 +51,13 @@ class Application(UIFile):
             self.browser.widget, expand=True, fill=True, padding=0)
         self.browser.connect('message-received', self.message_received_cb)
 
+    @trace
+    def main(self):
+        """Main method used to display the application UI."""
+        self.window.show_all()
+        gtk.main()
+
+    @trace
     def message_received_cb(self, browser, message):
         """Handle message send by webbrowser.
 
@@ -67,12 +74,6 @@ class Application(UIFile):
             self.random_data_btn.emit('clicked')
         elif event == 'bar-clicked':
             self.selected_renderer.emit('toggled', message['index'])
-
-    @trace
-    def main(self):
-        """Main method used to display the application UI."""
-        self.window.show_all()
-        gtk.main()
 
     @trace
     def gen_random_dataset(self):
@@ -100,6 +101,16 @@ class Application(UIFile):
         return dataset
 
     @trace
+    def update_graph(self):
+        dataset = [
+            {'date': r[0],
+             'value': r[1],
+             'selected': r[2],
+             }
+            for r in self.data_store]
+        self.browser.send('draw({})'.format(json.dumps(dataset)))
+
+    @trace
     def random_data_btn_clicked_cb(self, _button):
         """Send new random dataset to browser."""
         dataset = self.gen_random_dataset()
@@ -119,13 +130,22 @@ class Application(UIFile):
         row = self.data_store[path]
         row[2] = not row[2]
 
-        dataset = [
-            {'date': r[0],
-             'value': r[1],
-             'selected': r[2],
-             }
-            for r in self.data_store]
-        self.browser.send('draw({})'.format(json.dumps(dataset)))
+        self.update_graph()
+
+    @trace
+    def value_renderer_edited_cb(self, renderer, path, new_text):
+        logging.debug('value renderer edited: path: %s, new_text: %s',
+                      path, new_text)
+
+        try:
+            new_value = int(new_text)
+        except ValueError:
+            logging.error("new_text isn' an integer: %s", new_text)
+            return
+
+        row = self.data_store[path]
+        row[1] = new_value
+        self.update_graph()
 
     @trace
     def quit_activate_cb(self, _menuitem):

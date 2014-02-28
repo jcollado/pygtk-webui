@@ -276,7 +276,10 @@
                   <object class="GtkTreeViewColumn" id="value_column">
                     <property name="title" translatable="yes">Value</property>
                     <child>
-                      <object class="GtkCellRendererText" id="value_renderer"/>
+                      <object class="GtkCellRendererText" id="value_renderer">
+                        <property name="editable">True</property>
+                        <signal name="edited" handler="value_renderer_edited_cb" swapped="no"/>
+                      </object>
                       <attributes>
                         <attribute name="text">1</attribute>
                       </attributes>
