@@ -72,8 +72,10 @@ class Application(UIFile):
         event = message['event']
         if event == 'document-ready':
             self.random_data_btn.emit('clicked')
-        elif event == 'bar-clicked':
+        elif event == 'bar-clicked' or event == 'label-clicked':
             self.selected_renderer.emit('toggled', message['index'])
+        else:
+            raise ValueError('Unknown browser message: {}'.format(message))
 
     @trace
     def gen_random_dataset(self):

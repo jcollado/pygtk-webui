@@ -15,6 +15,9 @@ svg {
 
 .bar {
   fill: hsl(207.3,44%,49%);
+}
+
+.bar, .label {
   cursor: pointer;
 }
 
