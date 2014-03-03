@@ -43,22 +43,16 @@
     return dataset;
   }
 
-  function barGraph() {
-    // margin, width and height defined according to the convention:
-    // http://bl.ocks.org/mbostock/3019563
+  // Reusable chart design as explained in:
+  // http://bost.ocks.org/mike/chart/
+  function barChart() {
     var margin = {top: 20, right: 10, bottom: 30, left: 40};
-    var width = 750 - margin.left - margin.right;
-    var height = 450 - margin.top - margin.bottom;
-    var barSpace = 5;
+    var width = 750;
+    var height = 450;
 
-    var xScale = d3.scale.ordinal()
-      .rangeRoundBands([0, width], 0.1);
-
-    var yScale = d3.scale.linear()
-      .range([height, 0]);
-
-    var heightScale = d3.scale.linear()
-      .range([0, height]);
+    var xScale = d3.scale.ordinal();
+    var yScale = d3.scale.linear();
+    var heightScale = d3.scale.linear();
 
     var xAxis = d3.svg.axis()
       .scale(xScale)
@@ -69,129 +63,160 @@
       .scale(yScale)
       .orient("left");
 
-    // Create svg element and draw axes
-    function setup() {
-      var svg = d3.select("body")
-        .append("svg")
-          .attr("width", width + margin.left + margin.right)
-          .attr("height", height + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
-      svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0, " + height + ")");
-
-      svg.append("g")
-        .attr("class", "y axis");
-
-      svg.append("g")
-        .attr("class", "bars");
-
-      svg.append("g")
-        .attr("class", "labels");
-    }
+    var default_duration = 1000;
 
     // Draw bars in svg element through d3.js
-    function draw(dataset) {
-      var svg = d3.select("svg");
-      var default_duration = 1000;
+    function chart(selection) {
+      selection.each(function(dataset) {
+        var innerHeight = height - margin.top - margin.bottom;
+        var innerWidth = width - margin.left - margin.right;
 
-      // Map date strings to date objects
-      dataset.forEach(function(d) {
-        d.date = dateFormat.parse(d.date);
+        // Map date strings to date objects
+        dataset.forEach(function(d) {
+          d.date = dateFormat.parse(d.date);
+        });
+
+        // Adjust scales
+        xScale.rangeRoundBands([0, innerWidth], 0.1)
+          .domain(dataset.map(function(d) {
+            return d.date;
+          }));
+        var yExtent = d3.extent(dataset, function(d) {
+            return d.value;
+          });
+        yScale.range([innerHeight, 0])
+          .domain(yExtent);
+        heightScale.range([0, innerHeight])
+          .domain(yExtent);
+
+        // Bind dataset to svg element
+        var svg = d3.select(this)
+          .selectAll("svg")
+          .data([dataset]);
+
+        // Create svg layout if svg element doesn't exist
+        var gEnter = svg.enter()
+          .append("svg")
+          .append("g");
+
+        gEnter.append("g").attr("class", "x axis")
+          .attr("transform", "translate(0, " + innerHeight + ")");
+        gEnter.append("g").attr("class", "y axis");
+        gEnter.append("g").attr("class", "bars");
+        gEnter.append("g").attr("class", "labels");
+
+        // Update dimensions
+        svg.attr("width", width)
+          .attr("height", height);
+        svg.select("g")
+          .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+        // Update axes
+        svg.select(".x.axis")
+          .transition()
+          .duration(default_duration)
+          .attr("transform", "translate(0, " + innerHeight + ")")
+          .call(xAxis);
+
+        svg.select(".y.axis")
+          .transition()
+          .duration(default_duration)
+          .call(yAxis);
+
+        // Bind dataset to bars
+        var bars = svg.select(".bars")
+          .selectAll("rect")
+          .data(dataset);
+
+        // Create bars if they don't exist
+        bars.enter()
+          .append("rect")
+            .attr("class", "bar")
+            .on("click", function(d, i) {
+              console.log("bar clicked: " + d.date + ", " + d.value + ", " + i);
+              send({
+                "event": "bar-clicked",
+                "data": d,
+                "index": i,
+              });
+            });
+
+        // Update bars
+        bars.classed("selected", function(d) {
+            return d.selected;
+          })
+          .transition()
+          .duration(default_duration)
+            .attr("x", function(d) {
+              return xScale(d.date);
+            })
+            .attr("y", function(d) {
+              return yScale(d.value);
+            })
+            .attr("width", xScale.rangeBand())
+            .attr("height", function(d) {
+              return heightScale(d.value);
+            });
+
+        // Bind dataset to labels
+        var labels = svg.select(".labels")
+          .selectAll(".label")
+          .data(dataset);
+
+        // Create labels if they don't exist
+        labels.enter()
+          .append("text")
+            .attr("class", "label")
+            .on("click", function(d, i) {
+              console.log("label clicked: " + d.date + ", " + d.value + ", " + i);
+              send({
+                "event": "label-clicked",
+                "data": d,
+                "index": i,
+              });
+            });
+
+        // Update labels
+        labels.transition()
+          .duration(default_duration)
+            .attr("x", function(d) {
+              return xScale(d.date) + xScale.rangeBand() / 2;
+            })
+            .attr("y", function(d) {
+                return yScale(d.value) - 5;
+            })
+          .text(function(d) {
+            return d.value;
+          });
       });
-
-      // Adjust scales
-      xScale.domain(dataset.map(function(d) {
-        return d.date;
-      }));
-      var yExtent = d3.extent(dataset, function(d) {
-          return d.value;
-        });
-      yScale.domain(yExtent);
-      heightScale.domain(yExtent);
-
-      // Update y axis
-      svg.select(".x.axis")
-        .transition()
-        .duration(default_duration)
-        .call(xAxis);
-
-      svg.select(".y.axis")
-        .transition()
-        .duration(default_duration)
-        .call(yAxis);
-
-      // Update bars
-      var bars = svg.select(".bars")
-        .selectAll("rect")
-        .data(dataset);
-
-      bars.enter()
-        .append("rect")
-          .attr("class", "bar")
-          .on("click", function(d, i) {
-            console.log("bar clicked: " + d.date + ", " + d.value + ", " + i);
-            send({
-              "event": "bar-clicked",
-              "data": d,
-              "index": i,
-            });
-          });
-
-      bars.classed("selected", function(d) {
-          return d.selected;
-        })
-        .transition()
-        .duration(default_duration)
-          .attr("x", function(d) {
-            return xScale(d.date);
-          })
-          .attr("y", function(d) {
-            return yScale(d.value);
-          })
-          .attr("width", xScale.rangeBand())
-          .attr("height", function(d) {
-            return heightScale(d.value);
-          });
-
-      // Update labels
-      var labels = svg.select(".labels")
-        .selectAll(".label")
-        .data(dataset);
-
-      labels.enter()
-        .append("text")
-          .attr("class", "label")
-          .on("click", function(d, i) {
-            console.log("label clicked: " + d.date + ", " + d.value + ", " + i);
-            send({
-              "event": "label-clicked",
-              "data": d,
-              "index": i,
-            });
-          });
-
-      labels.transition()
-        .duration(default_duration)
-          .attr("x", function(d) {
-            return xScale(d.date) + xScale.rangeBand() / 2;
-          })
-          .attr("y", function(d) {
-              return yScale(d.value) - 5;
-          })
-        .text(function(d) {
-          return d.value;
-        });
     }
 
-    setup();
-    return draw;
+    chart.width = function(value) {
+      if (!arguments.length) {
+        return width;
+      }
+      width = value;
+      return chart;
+    };
+
+    chart.height = function(value) {
+      if (!arguments.length) {
+        return height;
+      }
+      height = value;
+      return chart;
+    };
+
+    return chart;
   }
 
+  var body = d3.select("body");
+  var chart = barChart();
+
   // Make draw function available to gtk
-  window.draw = barGraph();
+  window.draw = function(dataset) {
+    body.datum(dataset).call(chart);
+  };
 
   send({
     "event": "document-ready"
