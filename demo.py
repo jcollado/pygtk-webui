@@ -49,7 +49,8 @@ class Application(UIFile):
         self.browser = Browser(uri)
         self.browser_box.pack_start(
             self.browser.widget, expand=True, fill=True, padding=0)
-        self.browser.connect('message-received', self.message_received_cb)
+        self.browser.connect(
+            'message-received', self.browser_message_received_cb)
 
     @trace
     def main(self):
@@ -58,7 +59,7 @@ class Application(UIFile):
         gtk.main()
 
     @trace
-    def message_received_cb(self, browser, message):
+    def browser_message_received_cb(self, browser, message):
         """Handle message send by webbrowser.
 
         :param browser: Browser object that sent the message
@@ -111,7 +112,12 @@ class Application(UIFile):
              'selected': r[2],
              }
             for r in self.data_store]
-        self.browser.send('draw({})'.format(json.dumps(dataset)))
+
+        from_month = self.from_combobox.get_active()
+        to_month = self.to_combobox.get_active() + 1
+
+        self.browser.send(
+            'draw({})'.format(json.dumps(dataset[from_month:to_month])))
 
     @trace
     def random_data_btn_clicked_cb(self, _button):
@@ -148,6 +154,16 @@ class Application(UIFile):
 
         row = self.data_store[path]
         row[1] = new_value
+        self.update_graph()
+
+    @trace
+    def from_combobox_changed_cb(self, combobox):
+        logging.debug('from combobox changed: %s', combobox.get_active())
+        self.update_graph()
+
+    @trace
+    def to_combobox_changed_cb(self, combobox):
+        logging.debug('to combobox changed: %s', combobox.get_active())
         self.update_graph()
 
     @trace

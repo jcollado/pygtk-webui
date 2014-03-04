@@ -165,6 +165,7 @@
                     <property name="can_focus">False</property>
                     <property name="model">months_store</property>
                     <property name="active">0</property>
+                    <signal name="changed" handler="from_combobox_changed_cb" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="from_renderer"/>
                       <attributes>
@@ -208,6 +209,7 @@
                     <property name="can_focus">False</property>
                     <property name="model">months_store</property>
                     <property name="active">11</property>
+                    <signal name="changed" handler="to_combobox_changed_cb" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="to_renderer"/>
                       <attributes>

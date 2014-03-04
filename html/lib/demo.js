@@ -126,7 +126,9 @@
         // Bind dataset to bars
         var bars = svg.select(".bars")
           .selectAll("rect")
-          .data(dataset);
+          .data(dataset, function(d) {
+            return d.date;
+          });
 
         // Create bars if they don't exist
         bars.enter()
@@ -158,10 +160,15 @@
               return heightScale(d.value);
             });
 
+        // Remove bars no longer needed
+        bars.exit().remove();
+
         // Bind dataset to labels
         var labels = svg.select(".labels")
           .selectAll(".label")
-          .data(dataset);
+          .data(dataset, function(d) {
+            return d.date;
+          });
 
         // Create labels if they don't exist
         labels.enter()
@@ -188,6 +195,9 @@
           .text(function(d) {
             return d.value;
           });
+
+        // Remove labels no longer needed
+        labels.exit().remove();
       });
     }
 
