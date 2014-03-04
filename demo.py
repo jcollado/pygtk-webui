@@ -171,6 +171,17 @@ class Application(UIFile):
         """Quit application when quit menu item is activated."""
         gtk.main_quit()
 
+    def window_check_resize_cb(self, _window):
+        """Redraw graph after window resize."""
+        # A vertical border is needed
+        # to prevent the browser widget from resizing on every event
+        v_border = 20
+
+        width, height = self.browser.size
+        if width > 0 and height > v_border:
+            self.browser.send(
+                'resize({}, {})'.format(width, height - v_border))
+
     @trace
     def window_destroy_cb(self, _window):
         """Quit application when main window is destroyed."""

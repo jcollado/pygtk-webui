@@ -24,6 +24,17 @@ class Browser(gobject.GObject):
         self.widget.open(uri)
         self.widget.connect('title-changed', self.title_changed_cb)
 
+    @property
+    def size(self):
+        """Return size of the browser widget.
+
+        :returns: Browser widget width and height
+        :rtype: tuple(int, int)
+
+        """
+        rectangle = self.widget.allocation
+        return (rectangle.width, rectangle.height)
+
     def title_changed_cb(self, _widget, _frame, title):
         """Put window title in the message queue.
 

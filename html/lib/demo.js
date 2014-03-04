@@ -46,7 +46,7 @@
   // Reusable chart design as explained in:
   // http://bost.ocks.org/mike/chart/
   function barChart() {
-    var margin = {top: 20, right: 10, bottom: 30, left: 40};
+    var margin = {top: 20, right: 40, bottom: 30, left: 40};
     var width = 750;
     var height = 450;
 
@@ -70,11 +70,6 @@
       selection.each(function(dataset) {
         var innerHeight = height - margin.top - margin.bottom;
         var innerWidth = width - margin.left - margin.right;
-
-        // Map date strings to date objects
-        dataset.forEach(function(d) {
-          d.date = dateFormat.parse(d.date);
-        });
 
         // Adjust scales
         xScale.rangeRoundBands([0, innerWidth], 0.1)
@@ -225,7 +220,18 @@
 
   // Make draw function available to gtk
   window.draw = function(dataset) {
+    // Map date strings to date objects
+    dataset.forEach(function(d) {
+      d.date = dateFormat.parse(d.date);
+    });
+
     body.datum(dataset).call(chart);
+  };
+
+  // Redraw chart on window resize
+  window.resize = function(width, height) {
+    chart.width(width).height(height);
+    body.call(chart);
   };
 
   send({
