@@ -4,10 +4,10 @@ import json
 import logging
 
 from gi.repository import WebKit
-from gi import _gobject as gobject
+from gi.repository import GObject
 
 
-class Browser(gobject.GObject):
+class Browser(GObject.GObject):
     """Webkit browser wrapper to exchange messages with Gtk.
 
     :param uri: URI to the HTML file to be displayed.
@@ -15,12 +15,12 @@ class Browser(gobject.GObject):
 
     """
     __gsignals__ = {
-        'message-received': (gobject.SIGNAL_RUN_FIRST, None, (object,))
+        'message-received': (GObject.SIGNAL_RUN_FIRST, None, (object,))
     }
 
     def __init__(self, uri):
         # Initialize to be able to emit signals
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
         self.widget = WebKit.WebView()
         self.widget.open(uri)
@@ -63,4 +63,4 @@ class Browser(gobject.GObject):
         self.widget.execute_script(message)
 
 # Register to be able to emit signals
-gobject.type_register(Browser)
+GObject.type_register(Browser)
