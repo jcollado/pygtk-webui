@@ -1,12 +1,11 @@
+#!/usr/bin/env python
+
 """
 User interface file handling classes
 """
 import os
-
 from collections import defaultdict
-
-import gtk
-
+from gi.repository import Gtk
 
 class UIFile(object):
     """
@@ -35,7 +34,7 @@ class UIFile(object):
         ui_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                    'ui', ui_filename)
 
-        builder = gtk.Builder()
+        builder = Gtk.Builder()
         builder.add_from_file(ui_filename)
         builder.connect_signals(self)
         object.__setattr__(self, 'builder', builder)

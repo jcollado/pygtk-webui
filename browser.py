@@ -1,26 +1,28 @@
+#!/usr/bin/env python
+
 import json
 import logging
 
-import gobject
-import webkit
+from gi.repository import WebKit
+from gi.repository import GObject
 
 
-class Browser(gobject.GObject):
-    """Webkit browser wrapper to exchange messages with pygtk.
+class Browser(GObject.GObject):
+    """Webkit browser wrapper to exchange messages with Gtk.
 
     :param uri: URI to the HTML file to be displayed.
     :type uri: str
 
     """
     __gsignals__ = {
-        'message-received': (gobject.SIGNAL_RUN_FIRST, None, (object,))
+        'message-received': (GObject.SIGNAL_RUN_FIRST, None, (object,))
     }
 
     def __init__(self, uri):
         # Initialize to be able to emit signals
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
-        self.widget = webkit.WebView()
+        self.widget = WebKit.WebView()
         self.widget.open(uri)
         self.widget.connect('title-changed', self.title_changed_cb)
 
@@ -32,7 +34,7 @@ class Browser(gobject.GObject):
         :rtype: tuple(int, int)
 
         """
-        rectangle = self.widget.allocation
+        rectangle = self.widget.get_allocation()
         return (rectangle.width, rectangle.height)
 
     def title_changed_cb(self, _widget, _frame, title):
@@ -51,14 +53,14 @@ class Browser(gobject.GObject):
         self.emit('message-received', message)
 
     def send(self, message):
-        """Send message from gtk to webkit.
+        """Send message from Gtk to WebKit.
 
         :param message: javascript code to execute in the browser widget
         :type message: str
 
         """
-        logging.debug('(gtk -> webkit) %s', message)
+        logging.debug('(Gtk -> WebKit) %s', message)
         self.widget.execute_script(message)
 
 # Register to be able to emit signals
-gobject.type_register(Browser)
+GObject.type_register(Browser)

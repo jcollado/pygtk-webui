@@ -1,14 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
 import json
 import logging
 import operator
 import os
 import random
 import signal
-import urllib
+import urllib.request
 
-import gtk
-
+from gi.repository import Gtk
 from functools import wraps
 
 from uifile import UIFile
@@ -45,7 +45,8 @@ class Application(UIFile):
             os.path.dirname(os.path.realpath(__file__)),
             'html',
             'index.html')
-        uri = 'file://' + urllib.pathname2url(fname)
+
+        uri = 'file://' + urllib.request.pathname2url(fname)
         self.browser = Browser(uri)
         self.browser_box.pack_start(
             self.browser.widget, expand=True, fill=True, padding=0)
@@ -56,7 +57,7 @@ class Application(UIFile):
     def main(self):
         """Main method used to display the application UI."""
         self.window.show_all()
-        gtk.main()
+        Gtk.main()
 
     @trace
     def browser_message_received_cb(self, browser, message):
@@ -68,7 +69,7 @@ class Application(UIFile):
         :type message: dict
 
         """
-        logging.debug('(webkit -> gtk) %s', message)
+        logging.debug('(webkit -> Gtk) %s', message)
         assert isinstance(message, dict)
         event = message['event']
         if event == 'document-ready':
@@ -130,7 +131,7 @@ class Application(UIFile):
         """Update model to check/uncheck row.
 
         :param renderer: Renderer object that emitted the toggled event
-        :type renderer: gtk.CellRendererToggle
+        :type renderer: Gtk.CellRendererToggle
         :param path: Path to the row that has been toggled
         :type path: int
 
@@ -169,7 +170,7 @@ class Application(UIFile):
     @trace
     def quit_activate_cb(self, _menuitem):
         """Quit application when quit menu item is activated."""
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def window_check_resize_cb(self, _window):
         """Redraw graph after window resize."""
@@ -185,7 +186,7 @@ class Application(UIFile):
     @trace
     def window_destroy_cb(self, _window):
         """Quit application when main window is destroyed."""
-        gtk.main_quit()
+        Gtk.main_quit()
 
 
 def main():
@@ -197,7 +198,7 @@ def main():
     @trace
     def sigint_handler(*args):
         """Exit on Ctrl+C"""
-        gtk.main_quit()
+        Gtk.main_quit()
 
     signal.signal(signal.SIGINT, sigint_handler)
 
