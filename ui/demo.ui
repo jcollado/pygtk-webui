@@ -110,7 +110,7 @@
           <object class="GtkLabel" id="label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">pygtk + webkit demo</property>
+            <property name="label" translatable="yes">Gtk + WebKit demo</property>
             <attributes>
               <attribute name="scale" value="2"/>
             </attributes>

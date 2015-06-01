@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This is an example to check the interaction between a pygtk and webkit. The
+This is an example to check the interaction between a Gtk and webkit. The
 webkit side displays a bar graph with random values generated with d3.js and
-the pygtk part displays a treeview with those values.
+the Gtk part displays a treeview with those values.
 
 
 ## Functionality
@@ -29,11 +29,11 @@ can be found here:
 http://www.aclevername.com/articles/python-webgui/
 
 The main difference with the article is that there's no need to handle the
-communication between pygtk and webkit in a separate thread using a queue. This
-is because the trick used in the article to pass messages from webkit to pygtk
+communication between Gtk and webkit in a separate thread using a queue. This
+is because the trick used in the article to pass messages from webkit to Gtk
 (update the page title) already handles the information within the gtk thread.
 
-To make this communication between pygtk and webkit a little bit more elegant,
+To make this communication between Gtk and webkit a little bit more elegant,
 what this example provides is a `Browser` class that wraps the webkit widget
-and defines a new `message-received` event that is used to let the pygtk
+and defines a new `message-received` event that is used to let the Gtk
 application know that a message has been received from webkit.
